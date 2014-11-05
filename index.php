@@ -10,7 +10,6 @@
                 float:left;
                 margin: 5px;
             }
-            
             .border{
                 border: 2px solid black;
             }
@@ -21,7 +20,7 @@
         
         <div class="border">
             <h2>Lägg till</h2>
-            <form>
+            <form method="POST">
                 <p>Produktnamn:</p>
                 <input type="text" name="name">
                 <br>
@@ -34,7 +33,7 @@
 
         <div class="border">
             <h2>Uppdatera</h2>
-            <form>
+            <form method="POST">
                 <p>Gammalt produktnamn:</p>
                 <input type="text" name="name_old">
                 <br>
@@ -51,7 +50,7 @@
         <div class="border">
             <h2>Ta bort</h2>
             <p>Produktnamn: </p>
-            <form>
+            <form method="POST">
             <input type="text" name="name">
             <input type="submit" name="delete">
             </form>
@@ -71,10 +70,10 @@
 
         $dbh = new PDO('mysql:dbname=' . DB_NAME . ';host=' . DB_SERVER . ';charset=utf8', DB_USER, DB_PASSWORD);
 
-        if(isset($_GET["update"]) and isset($_GET["pris"]) and $_GET["pris"] > 0){
-            $tmp_produktnamn_old = $_GET["name_old"];
-            $tmp_produktnamn_new = $_GET["name_new"];
-            $tmp_pris = $_GET["pris"];
+        if(isset($_POST["update"]) and isset($_POST["pris"]) and $_POST["pris"] > 0){
+            $tmp_produktnamn_old = $_POST["name_old"];
+            $tmp_produktnamn_new = filter_input(INPUT_POST, 'name_new', FILTER_SANITIZE_SPECIAL_CHARS);
+            $tmp_pris = $_POST["pris"];
             if($tmp_produktnamn_new != ""){
             $sql = 'UPDATE `produkter` SET `namn`="'. $tmp_produktnamn_new .'",`pris`='. $tmp_pris . ' WHERE namn="'. $tmp_produktnamn_old .'"';
             }
@@ -85,9 +84,9 @@
             $stmt->execute();
         }
         
-        if(isset($_GET["add"]) and $_GET["pris"] > 0){
-            $tmp_produktnamn = $_GET["name"];
-            $tmp_pris = $_GET["pris"];
+        if(isset($_POST["add"]) and $_POST["pris"] > 0){
+            $tmp_produktnamn = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
+            $tmp_pris = filter_input(INPUT_POST, 'pris', FILTER_SANITIZE_SPECIAL_CHARS);
             $sql = 'INSERT INTO `produkter`(`id`, `namn`, `pris`) VALUES ("","' . $tmp_produktnamn .'", ' . $tmp_pris .')';
 
             $stmt = $dbh->prepare($sql);
@@ -96,14 +95,15 @@
             echo "Produkten: " . $tmp_produktnamn . " har lagts till med priset " . $tmp_pris . " :-";
         }
         
-        if(isset($_GET["delete"])){
-            $tmp_produktnamn = $_GET["name"];
+        if(isset($_POST["delete"])){
+            $tmp_produktnamn = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
+            $skrivut = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
             $sql = 'DELETE FROM `produkter` WHERE namn ="' . $tmp_produktnamn . '"';
 
             $stmt = $dbh->prepare($sql);
             $stmt->execute();
             
-            echo "Produkten: " . $tmp_produktnamn . " har tagits bort ur produktregistret.";
+            echo "Produkten: " . $skrivut . " har tagits bort ur produktregistret.";
         }
         
         if (!isset($_GET["hide"])) {
